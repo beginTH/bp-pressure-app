@@ -5,7 +5,7 @@ const ASSETS = [
   './styles.css',
   './app.js',
   './manifest.json',
-  './icons/icon-512.png',
+  './icons/icon-512.jpg',
   'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap',
   'https://cdn.jsdelivr.net/npm/chart.js'
 ];

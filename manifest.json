@@ -11,7 +11,7 @@
   "categories": ["health", "medical", "fitness"],
   "icons": [
     {
-      "src": "icons/icon-512.png",
+      "src": "icons/icon-512.jpg",
       "sizes": "1024x1024",
       "type": "image/jpeg",
       "purpose": "any maskable"
@@ -19,7 +19,7 @@
   ],
   "screenshots": [
     {
-      "src": "icons/icon-512.png",
+      "src": "icons/icon-512.jpg",
       "sizes": "1024x1024",
       "type": "image/jpeg",
       "form_factor": "narrow",
