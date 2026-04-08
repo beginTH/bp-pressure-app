@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BPressure AI</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0a0a0c">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BP AI">
+    <link rel="apple-touch-icon" href="icons/icon-512.png">
+    <link rel="icon" type="image/png" href="icons/icon-512.png">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- View: Dashboard -->
+        <section id="view-dashboard" class="view active">
+            <header>
+                <h1>สวัสดีครับ!</h1>
+                <p>ค่าความดันล่าสุดของคุณ</p>
+            </header>
+            
+            <div class="stats-card glass">
+                <div id="install-banner" style="display:none; margin-bottom: 20px; padding: 15px; background: rgba(59, 130, 246, 0.2); border-radius: 15px; border: 1px solid var(--accent-blue);">
+                    <p style="font-size: 14px; margin-bottom: 10px;">ติดตั้งแอปเพื่อใช้งานแบบเต็มจอและออฟไลน์</p>
+                    <button id="btn-install" class="btn-submit" style="padding: 10px; font-size: 14px;">ติดตั้งแอปทันที</button>
+                </div>
+                <div class="bp-main">
+                    <span id="stat-latest-sys" class="sys">120</span>
+                    <span class="divider">/</span>
+                    <span id="stat-latest-dia" class="dia">80</span>
+                    <span class="unit">mmHg</span>
+                </div>
+                <div class="bp-pulse">
+                    <span class="pulse-icon">❤️</span>
+                    <span id="stat-latest-pulse">72</span> BPM
+                </div>
+                <div id="stat-latest-status" class="bp-status normal">ปกติ</div>
+            </div>
+
+            <div class="summary-grid">
+                <div class="sum-card glass">
+                    <label>เฉลี่ย Sys</label>
+                    <div id="stat-avg-sys">118</div>
+                </div>
+                <div class="sum-card glass">
+                    <label>เฉลี่ย Dia</label>
+                    <div id="stat-avg-dia">79</div>
+                </div>
+            </div>
+
+            <div class="chart-container glass">
+                <canvas id="bp-chart"></canvas>
+            </div>
+        </section>
+
+        <!-- View: History -->
+        <section id="view-history" class="view">
+            <header>
+                <h1>ประวัติการบันทึก</h1>
+            </header>
+            <div id="history-list" class="list-container">
+                <!-- Records will be injected here -->
+                <div class="empty-state">
+                    <p>ยังไม่มีประวัติการบันทึก</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- View: Add (Camera/Form) -->
+        <section id="view-add" class="view">
+            <header>
+                <h1>บันทึกใหม่</h1>
+            </header>
+            
+            <div id="camera-container" class="camera-card glass">
+                <video id="camera-preview" autoplay playsinline></video>
+                <canvas id="photo-canvas" style="display:none;"></canvas>
+                <div id="photo-preview-container" style="display:none;">
+                    <img id="photo-preview" src="">
+                    <button class="btn-retake" onclick="app.retakePhoto()">ถ่ายใหม่</button>
+                </div>
+                <div id="camera-controls">
+                    <button id="btn-snap" class="btn-snap"></button>
+                </div>
+            </div>
+
+            <form id="record-form" class="record-form">
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Sys (บน)</label>
+                        <input type="number" id="in-sys" placeholder="120" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Dia (ล่าง)</label>
+                        <input type="number" id="in-dia" placeholder="80" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Pulse</label>
+                        <input type="number" id="in-pulse" placeholder="72" required>
+                    </div>
+                </div>
+                <button type="submit" id="btn-save" class="btn-submit">บันทึกข้อมูล</button>
+            </form>
+        </section>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="#dashboard" class="nav-item active" data-view="dashboard">
+                <span class="icon">🏠</span>
+                <label>หน้าหลัก</label>
+            </a>
+            <a href="#history" class="nav-item" data-view="history">
+                <span class="icon">📜</span>
+                <label>ประวัติ</label>
+            </a>
+            <a href="#add" class="nav-item central" data-view="add">
+                <span class="icon">+</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
