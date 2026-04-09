@@ -170,6 +170,18 @@ const app = {
             previewContainer.style.display = 'block';
             video.style.display = 'none';
             controls.style.display = 'none';
+
+            // Shutter animation
+            const flash = document.createElement('div');
+            flash.className = 'shutter';
+            flash.style.position = 'absolute';
+            flash.style.top = '0';
+            flash.style.left = '0';
+            flash.style.width = '100%';
+            flash.style.height = '100%';
+            flash.style.zIndex = '100';
+            container.appendChild(flash);
+            setTimeout(() => flash.remove(), 300);
         }, 'image/jpeg', 0.8);
     },
 
@@ -189,8 +201,8 @@ const app = {
             
             const status = this.getBPStatus(latest.sys, latest.dia);
             const statusEl = document.getElementById('stat-latest-status');
-            statusEl.textContent = status.label;
             statusEl.className = `bp-status ${status.class}`;
+            statusEl.querySelector('.status-label').textContent = status.label;
 
             // Averages
             const avgSys = Math.round(records.reduce((acc, r) => acc + parseInt(r.sys), 0) / records.length);
@@ -198,14 +210,40 @@ const app = {
             document.getElementById('stat-avg-sys').textContent = avgSys;
             document.getElementById('stat-avg-dia').textContent = avgDia;
 
+            const insightsEl = document.getElementById('stat-insights');
+            if (insightsEl) insightsEl.textContent = this.generateInsights(records);
+
             this.updateChart(records.slice(0, 7).reverse());
         }
     },
 
     getBPStatus: function(sys, dia) {
-        if (sys >= 140 || dia >= 90) return { label: 'สูง (ความดันสูงปี๊ด)', class: 'high' };
-        if (sys >= 130 || dia >= 85) return { label: 'ค่อนข้างสูง', class: 'high' };
-        return { label: 'ปกติ', class: 'normal' };
+        sys = parseInt(sys);
+        dia = parseInt(dia);
+        
+        if (sys >= 180 || dia >= 120) return { label: 'Crisis (อันตรายมาก)', class: 'high', color: '#ff0000' };
+        if (sys >= 140 || dia >= 90) return { label: 'Stage 2 (ความดันสูง)', class: 'high', color: '#ff4d4d' };
+        if (sys >= 130 || dia >= 80) return { label: 'Stage 1 (เริ่มสูง)', class: 'warning', color: '#fbbf24' };
+        if (sys >= 120 && dia < 80) return { label: 'Elevated (ค่อนข้างสูง)', class: 'warning', color: '#fcd34d' };
+        if (sys < 90 || dia < 60) return { label: 'Low (ความดันต่ำ)', class: 'low', color: '#3b82f6' };
+        return { label: 'Normal (ปกติ)', class: 'normal', color: '#00ffa3' };
+    },
+
+    generateInsights: function(records) {
+        if (records.length < 2) return "เริ่มบันทึกข้อมูลเพื่อดูการวิเคราะห์สุขภาพของคุณ";
+        
+        const latest = records[0];
+        const prev = records[1];
+        const sysDiff = latest.sys - prev.sys;
+        
+        let insight = "";
+        if (Math.abs(sysDiff) > 10) {
+            insight = sysDiff > 0 ? "ความดันตัวบนของคุณสูงขึ้นกว่าครั้งก่อนค่อนข้างมาก พักผ่อนให้เพียงพอนะครับ" : "เยี่ยมเลย! ความดันตัวบนของคุณลดลงอย่างเห็นได้ชัด";
+        } else {
+            insight = "ระดับความดันของคุณค่อนข้างคงที่ รักษาพฤติกรรมสุขภาพที่ดีต่อไปครับ";
+        }
+        
+        return `${insight} (วิเคราะห์จาก 2 ครั้งล่าสุด)`;
     },
 
     renderHistory: async function() {
@@ -218,7 +256,10 @@ const app = {
         }
 
         list.innerHTML = '';
-        for (const r of records) {
+        for (let i = 0; i < records.length; i++) {
+            const r = records[i];
+            const prevR = records[i + 1]; // Previous in time is next in array
+            
             const item = document.createElement('div');
             item.className = 'record-item glass';
             
@@ -226,13 +267,21 @@ const app = {
                 day: 'numeric', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' 
             });
 
+            // Trend indicator
+            let trendHtml = '';
+            if (prevR) {
+                const sysDiff = r.sys - prevR.sys;
+                if (sysDiff > 5) trendHtml = '<span style="color:var(--accent-red); margin-left:5px">▲</span>';
+                else if (sysDiff < -5) trendHtml = '<span style="color:var(--accent-green); margin-left:5px">▼</span>';
+            }
+
             const imgBlob = await this.getImage(r.photoId);
-            const imgUrl = imgBlob ? URL.createObjectURL(imgBlob) : 'https://via.placeholder.com/60';
+            const imgUrl = imgBlob ? URL.createObjectURL(imgBlob) : 'icons/icon-192.png';
 
             item.innerHTML = `
                 <img src="${imgUrl}" class="record-img" onclick="openFullscreen('${imgUrl}')">
                 <div class="record-info">
-                    <h3>${r.sys}/${r.dia} <span style="font-size:12px; font-weight:400; color:var(--text-secondary)">P: ${r.pulse}</span></h3>
+                    <h3>${r.sys}/${r.dia}${trendHtml} <span style="font-size:12px; font-weight:400; color:var(--text-secondary)">P: ${r.pulse}</span></h3>
                     <p>${date}</p>
                 </div>
                 <button class="btn-delete" onclick="app.handleDelete(${r.id}, '${r.photoId}')">🗑️</button>
@@ -348,11 +397,18 @@ const app = {
             // Reset form
             e.target.reset();
             this.capturedBlob = null;
+            document.getElementById('photo-preview-container').style.display = 'none';
             
             // Go back to dashboard
             window.location.hash = 'dashboard';
             alert('บันทึกข้อมูลเรียบร้อยแล้ว!');
         });
+
+        // Camera Snap
+        const btnSnap = document.getElementById('btn-snap');
+        if (btnSnap) {
+            btnSnap.addEventListener('click', () => this.takePhoto());
+        }
     },
 
     registerSW: function() {

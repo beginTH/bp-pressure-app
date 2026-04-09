@@ -20,7 +20,10 @@
         <!-- View: Dashboard -->
         <section id="view-dashboard" class="view active">
             <header>
-                <h1>สวัสดีครับ!</h1>
+                <div class="header-top">
+                    <h1>สวัสดีครับ!</h1>
+                    <span class="ai-badge">AI Powered</span>
+                </div>
                 <p>ค่าความดันล่าสุดของคุณ</p>
             </header>
             
@@ -39,22 +42,39 @@
                     <span class="pulse-icon">❤️</span>
                     <span id="stat-latest-pulse">72</span> BPM
                 </div>
-                <div id="stat-latest-status" class="bp-status normal">ปกติ</div>
+                <div id="stat-latest-status" class="bp-status normal">
+                    <span class="status-dot"></span>
+                    <span class="status-label">ปกติ</span>
+                </div>
             </div>
 
             <div class="summary-grid">
                 <div class="sum-card glass">
-                    <label>เฉลี่ย Sys</label>
-                    <div id="stat-avg-sys">118</div>
+                    <div class="sum-header">
+                        <span class="sum-icon">📈</span>
+                        <label>เฉลี่ย Sys</label>
+                    </div>
+                    <div id="stat-avg-sys" class="sum-value">118</div>
                 </div>
                 <div class="sum-card glass">
-                    <label>เฉลี่ย Dia</label>
-                    <div id="stat-avg-dia">79</div>
+                    <div class="sum-header">
+                        <span class="sum-icon">📉</span>
+                        <label>เฉลี่ย Dia</label>
+                    </div>
+                    <div id="stat-avg-dia" class="sum-value">79</div>
                 </div>
             </div>
 
             <div class="chart-container glass">
                 <canvas id="bp-chart"></canvas>
+            </div>
+
+            <div class="insights-card glass">
+                <div class="insights-header">
+                    <span class="sparkle">✨</span>
+                    <h3>Smart Insights</h3>
+                </div>
+                <p id="stat-insights">กำลังวิเคราะห์ข้อมูล...</p>
             </div>
         </section>
 
@@ -79,6 +99,13 @@
             
             <div id="camera-container" class="camera-card glass">
                 <video id="camera-preview" autoplay playsinline></video>
+                <div id="camera-viewfinder" class="viewfinder">
+                    <div class="corner tl"></div>
+                    <div class="corner tr"></div>
+                    <div class="corner bl"></div>
+                    <div class="corner br"></div>
+                    <div class="center-cross"></div>
+                </div>
                 <canvas id="photo-canvas" style="display:none;"></canvas>
                 <div id="photo-preview-container" style="display:none;">
                     <img id="photo-preview" src="">
