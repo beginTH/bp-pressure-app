@@ -3,7 +3,8 @@
   "name": "BPressure AI - Blood Pressure Tracker",
   "short_name": "BPressure AI",
   "description": "Smart and professional blood pressure tracking app with AI-ready storage and visualization.",
-  "start_url": "index.html",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0a0a0c",
   "theme_color": "#0a0a0c",
@@ -30,6 +31,13 @@
       "type": "image/png",
       "form_factor": "narrow",
       "label": "BPressure AI Dashboard"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "BPressure AI Desktop View"
     }
   ]
 }
