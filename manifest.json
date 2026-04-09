@@ -3,13 +3,17 @@
   "name": "BPressure AI - Blood Pressure Tracker",
   "short_name": "BPressure AI",
   "description": "Smart and professional blood pressure tracking app with AI-ready storage and visualization.",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "/bp-pressure-app/index.html",
+  "scope": "/bp-pressure-app/",
   "display": "standalone",
   "background_color": "#0a0a0c",
   "theme_color": "#0a0a0c",
   "orientation": "portrait",
-  "categories": ["health", "medical", "fitness"],
+  "categories": [
+    "health",
+    "medical",
+    "fitness"
+  ],
   "icons": [
     {
       "src": "icons/icon-512.png",
@@ -39,5 +43,31 @@
       "form_factor": "wide",
       "label": "BPressure AI Desktop View"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "บันทึกใหม่",
+      "url": "/bp-pressure-app/index.html#add",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "ดูประวัติ",
+      "url": "/bp-pressure-app/index.html#history",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
 }
