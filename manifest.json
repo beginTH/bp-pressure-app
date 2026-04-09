@@ -1,11 +1,17 @@
 {
-  "id": "/bp-pressure-app/",
+  "id": "https://beginth.github.io/bp-pressure-app/",
   "name": "BPressure AI - Blood Pressure Tracker",
   "short_name": "BPressure AI",
   "description": "Smart and professional blood pressure tracking app with AI-ready storage and visualization.",
+  "lang": "th",
+  "dir": "ltr",
   "start_url": "/bp-pressure-app/index.html",
   "scope": "/bp-pressure-app/",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "window-controls-overlay"
+  ],
   "background_color": "#0a0a0c",
   "theme_color": "#0a0a0c",
   "orientation": "portrait",

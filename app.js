@@ -17,7 +17,6 @@ const app = {
         console.log('App Initializing...');
         await this.initDB();
         this.setupEventListeners();
-        this.registerSW();
         this.route();
         this.refreshData();
     },
@@ -411,17 +410,6 @@ const app = {
         }
     },
 
-    registerSW: function() {
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js', { scope: './' })
-                .then(reg => {
-                    console.log('SW Registered with scope:', reg.scope);
-                    // Explicitly update to help PWABuilder/Browsers detect the latest logic
-                    reg.update();
-                })
-                .catch(err => console.log('SW Error:', err));
-        }
-    }
 };
 
 // Start app
