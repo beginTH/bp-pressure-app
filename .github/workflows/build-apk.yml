@@ -34,8 +34,8 @@ jobs:
           # Create android.keystore (Temporary for build)
           keytool -genkey -v -keystore android.keystore -alias android -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=BPressure, OU=Health, O=BeginTH, L=Bangkok, S=Bangkok, C=TH"
           
-          # Initialize and Build without interaction
-          bubblewrap init --manifest twa-manifest.json --extracert --yes
+          # Initialize from Web Manifest URL and Build
+          bubblewrap init --manifest https://beginth.github.io/bp-pressure-app/manifest.json --extracert --yes
           bubblewrap build --signingKeyPath ./android.keystore --signingKeyPassword password --signingKeyAlias android --skipCheck
           
       - name: Upload APK
