@@ -10,16 +10,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Build Android APK (via PWABuilder API)
-        uses: jonasmerlin/pwa-builder-action@v1
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
         with:
-          # Your PWA URL
-          url: https://beginth.github.io/bp-pressure-app/
-          # Name of the output artifact
-          output: bpressure-apk.zip
+          java-version: '17'
+          distribution: 'temurin'
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          
+      - name: Build APK (The Ultimate Way)
+        run: |
+          # 1. Pre-configure paths
+          mkdir -p ~/.bubblewrap
+          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json
+          
+          # 2. Create android.keystore
+          keytool -genkey -v -keystore android.keystore -alias android -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=BPressure, OU=Health, O=BeginTH, L=Bangkok, S=Bangkok, C=TH"
+          
+          # 3. Initialize and Build
+          # Using npx to get the latest stable version
+          npx @bubblewrap/cli init --manifest https://beginth.github.io/bp-pressure-app/manifest.json --extracert --yes
+          npx @bubblewrap/cli build --signingKeyPath ./android.keystore --signingKeyPassword password --signingKeyAlias android --skipCheck
           
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: bpressure-apk
-          path: bpressure-apk.zip
+          path: ./*.apk
