@@ -171,6 +171,7 @@ const app = {
             controls.style.display = 'none';
 
             // Shutter animation
+            const container = document.getElementById('camera-container');
             const flash = document.createElement('div');
             flash.className = 'shutter';
             flash.style.position = 'absolute';
@@ -181,7 +182,92 @@ const app = {
             flash.style.zIndex = '100';
             container.appendChild(flash);
             setTimeout(() => flash.remove(), 300);
+
+            // Auto-detect BP values via OCR
+            this.detectBPValues(blob);
         }, 'image/jpeg', 0.8);
+    },
+
+    detectBPValues: async function(blob) {
+        const overlay = document.getElementById('ocr-overlay');
+        const statusEl = document.getElementById('ocr-status');
+        
+        // Show loading overlay
+        overlay.style.display = 'flex';
+        statusEl.textContent = '🔍 กำลังอ่านค่าจากรูป...';
+
+        try {
+            // Preprocess image for better OCR
+            const imageUrl = URL.createObjectURL(blob);
+            
+            statusEl.textContent = '🧠 กำลังวิเคราะห์ตัวเลข...';
+            
+            const result = await Tesseract.recognize(imageUrl, 'eng', {
+                logger: m => {
+                    if (m.status === 'recognizing text') {
+                        const pct = Math.round(m.progress * 100);
+                        statusEl.textContent = `🧠 กำลังวิเคราะห์... ${pct}%`;
+                    }
+                }
+            });
+
+            URL.revokeObjectURL(imageUrl);
+
+            // Extract numbers from OCR text
+            const text = result.data.text;
+            console.log('OCR Raw Text:', text);
+            
+            // Find all 2-3 digit numbers
+            const numbers = text.match(/\b\d{2,3}\b/g);
+            console.log('Detected numbers:', numbers);
+
+            if (numbers && numbers.length >= 3) {
+                // Convert to integers and sort descending
+                const nums = numbers.map(Number)
+                    .filter(n => n >= 30 && n <= 250) // Filter reasonable BP values
+                    .sort((a, b) => b - a);
+
+                if (nums.length >= 3) {
+                    // Largest = SYS, second = DIA or Pulse, third = remaining
+                    const sys = nums[0];
+                    // DIA is typically less than SYS and between 40-120
+                    // Pulse is typically between 40-200
+                    let dia, pulse;
+                    
+                    if (nums[1] <= 120) {
+                        dia = nums[1];
+                        pulse = nums[2];
+                    } else {
+                        // If second number > 120, it might be pulse
+                        pulse = nums[1];
+                        dia = nums[2];
+                    }
+
+                    document.getElementById('in-sys').value = sys;
+                    document.getElementById('in-dia').value = dia;
+                    document.getElementById('in-pulse').value = pulse;
+
+                    statusEl.innerHTML = `✅ ตรวจพบ: SYS ${sys} / DIA ${dia} / Pulse ${pulse}`;
+                    setTimeout(() => { overlay.style.display = 'none'; }, 2000);
+                    return;
+                } else if (nums.length >= 2) {
+                    document.getElementById('in-sys').value = nums[0];
+                    document.getElementById('in-dia').value = nums[1];
+                    statusEl.innerHTML = `⚠️ พบ 2 ค่า: SYS ${nums[0]} / DIA ${nums[1]} — กรุณากรอก Pulse เอง`;
+                    setTimeout(() => { overlay.style.display = 'none'; }, 2500);
+                    return;
+                }
+            }
+
+            // Fallback: couldn't detect enough values
+            statusEl.innerHTML = '⚠️ ไม่สามารถอ่านค่าได้ชัดเจน — กรุณากรอกค่าเอง';
+            setTimeout(() => { overlay.style.display = 'none'; }, 2500);
+
+        } catch (err) {
+            console.error('OCR Error:', err);
+            statusEl.innerHTML = '❌ เกิดข้อผิดพลาด — กรุณากรอกค่าเอง';
+            setTimeout(() => { overlay.style.display = 'none'; }, 2000);
+        }
     },
 
     retakePhoto: function() {

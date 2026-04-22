@@ -124,6 +124,10 @@
                 <div id="camera-controls">
                     <button id="btn-snap" class="btn-snap"></button>
                 </div>
+                <div id="ocr-overlay" class="ocr-overlay" style="display:none;">
+                    <div class="ocr-spinner"></div>
+                    <p id="ocr-status">🔍 กำลังอ่านค่าจากรูป...</p>
+                </div>
             </div>
 
             <form id="record-form" class="record-form">
@@ -163,6 +167,7 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
