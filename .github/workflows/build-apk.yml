@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: set up JDK 17
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -19,24 +19,53 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          
-      - name: Build APK (The Ultimate Way)
+          node-version: 22
+
+      - name: Prepare Android SDK
         run: |
-          # 1. Pre-configure paths
+          echo "ANDROID_HOME = $ANDROID_HOME"
+          echo "JAVA_HOME = $JAVA_HOME"
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;34.0.0" "platforms;android-34"
+
+      - name: Install Bubblewrap globally
+        run: npm install -g @bubblewrap/cli
+
+      - name: Configure Bubblewrap
+        run: |
           mkdir -p ~/.bubblewrap
-          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json
-          
-          # 2. Create android.keystore
-          keytool -genkey -v -keystore android.keystore -alias android -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=BPressure, OU=Health, O=BeginTH, L=Bangkok, S=Bangkok, C=TH"
-          
-          # 3. Initialize and Build
-          # Using npx to get the latest stable version
-          npx @bubblewrap/cli init --manifest https://beginth.github.io/bp-pressure-app/manifest.json --extracert --yes
-          npx @bubblewrap/cli build --signingKeyPath ./android.keystore --signingKeyPassword password --signingKeyAlias android --skipCheck
-          
+          cat > ~/.bubblewrap/config.json << EOF
+          {
+            "jdkPath": "$JAVA_HOME",
+            "androidSdkPath": "$ANDROID_HOME"
+          }
+          EOF
+          echo "Config written:"
+          cat ~/.bubblewrap/config.json
+
+      - name: Create Keystore
+        run: |
+          keytool -genkey -v -keystore android.keystore -alias android \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass password -keypass password \
+            -dname "CN=BPressure, OU=Health, O=BeginTH, L=Bangkok, S=Bangkok, C=TH"
+
+      - name: Initialize TWA Project
+        run: bubblewrap init --manifest https://beginth.github.io/bp-pressure-app/manifest.json --extracert --yes
+
+      - name: Build APK
+        run: bubblewrap build --signingKeyPath ./android.keystore --signingKeyPassword password --signingKeyAlias android --skipCheck
+
+      - name: List APK files
+        run: |
+          echo "Looking for APK files..."
+          find . -name "*.apk" -type f
+          ls -la *.apk 2>/dev/null || echo "No APK in root"
+
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: bpressure-apk
-          path: ./*.apk
+          path: |
+            ./*.apk
+            ./app/build/outputs/apk/**/*.apk
