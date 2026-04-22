@@ -2,9 +2,12 @@ package com.beginth.bpressure;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.webkit.ConsoleMessage;
+import android.webkit.JsResult;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -36,19 +39,84 @@ public class MainActivity extends Activity {
 
         webView = new WebView(this);
 
+        // --- WebView Settings ---
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
+
+        // Storage & Database support (IndexedDB)
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
+        String dbPath = getApplicationContext().getDir("database", MODE_PRIVATE).getPath();
+        settings.setDatabasePath(dbPath);
+
+        // Cache
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        settings.setAppCacheEnabled(true);
+        settings.setAppCachePath(getCacheDir().getAbsolutePath());
+
+        // File & Blob URL access
         settings.setAllowFileAccess(true);
+        settings.setAllowFileAccessFromFileURLs(true);
+        settings.setAllowUniversalAccessFromFileURLs(true);
+
+        // Media
         settings.setMediaPlaybackRequiresUserGesture(false);
 
-        webView.setWebViewClient(new WebViewClient());
+        // Mixed content (allow https to load http resources if needed)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        }
+
+        // --- WebViewClient ---
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                // Keep all navigation inside the WebView
+                view.loadUrl(url);
+                return true;
+            }
+        });
+
+        // --- WebChromeClient ---
         webView.setWebChromeClient(new WebChromeClient() {
+            // Grant camera/microphone permissions to the web page
             @Override
             public void onPermissionRequest(PermissionRequest request) {
                 request.grant(request.getResources());
+            }
+
+            // Handle JavaScript alert() dialogs
+            @Override
+            public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+                new AlertDialog.Builder(MainActivity.this)
+                    .setTitle("BPressure AI")
+                    .setMessage(message)
+                    .setPositiveButton("ตกลง", (dialog, which) -> result.confirm())
+                    .setCancelable(false)
+                    .show();
+                return true;
+            }
+
+            // Handle JavaScript confirm() dialogs
+            @Override
+            public boolean onJsConfirm(WebView view, String url, String message, JsResult result) {
+                new AlertDialog.Builder(MainActivity.this)
+                    .setTitle("BPressure AI")
+                    .setMessage(message)
+                    .setPositiveButton("ใช่", (dialog, which) -> result.confirm())
+                    .setNegativeButton("ไม่", (dialog, which) -> result.cancel())
+                    .setCancelable(false)
+                    .show();
+                return true;
+            }
+
+            // Log JavaScript console messages for debugging
+            @Override
+            public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+                android.util.Log.d("BPressureAI", consoleMessage.message()
+                    + " -- From line " + consoleMessage.lineNumber()
+                    + " of " + consoleMessage.sourceId());
+                return true;
             }
         });
 
