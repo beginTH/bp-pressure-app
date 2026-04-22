@@ -26,25 +26,21 @@ jobs:
         
       - name: Configure and Build APK
         run: |
-          # 1. Discover paths
-          echo "JDK Path: $JAVA_HOME"
-          echo "Android SDK Path: $ANDROID_HOME"
-          
-          # 2. Pre-configure Bubblewrap with discovered paths
+          # 1. Pre-configure Bubblewrap with correct paths
           mkdir -p ~/.bubblewrap
           echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json
           
-          # 3. Clean start
+          # 2. Clean start
           rm -rf ./android-project twa-manifest.json || true
           
-          # 4. Initialize from Web Manifest URL
-          # Using --yes and NOT piping 'n' to see if config.json is enough
-          bubblewrap init --manifest https://beginth.github.io/bp-pressure-app/manifest.json --extracert --yes
+          # 3. Initialize with auto-enter (yes "")
+          # This will accept all defaults (Domain, Path, Name, etc.)
+          yes "" | bubblewrap init --manifest https://beginth.github.io/bp-pressure-app/manifest.json --extracert --yes || true
           
-          # 5. Create keystore
+          # 4. Create keystore
           keytool -genkey -v -keystore android.keystore -alias android -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=BPressure, OU=Health, O=BeginTH, L=Bangkok, S=Bangkok, C=TH"
           
-          # 6. Build
+          # 5. Build without interaction
           bubblewrap build --signingKeyPath ./android.keystore --signingKeyPassword password --signingKeyAlias android --skipCheck
           
       - name: Upload APK
