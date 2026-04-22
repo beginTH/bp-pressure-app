@@ -16,6 +16,7 @@ import android.webkit.WebViewClient;
 import android.view.Window;
 import android.view.WindowManager;
 
+@SuppressWarnings("deprecation")
 public class MainActivity extends Activity {
     private WebView webView;
     private static final int CAMERA_PERMISSION_REQUEST = 1001;
@@ -46,13 +47,6 @@ public class MainActivity extends Activity {
         // Storage & Database support (IndexedDB)
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
-        String dbPath = getApplicationContext().getDir("database", MODE_PRIVATE).getPath();
-        settings.setDatabasePath(dbPath);
-
-        // Cache
-        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        settings.setAppCacheEnabled(true);
-        settings.setAppCachePath(getCacheDir().getAbsolutePath());
 
         // File & Blob URL access
         settings.setAllowFileAccess(true);
@@ -61,6 +55,9 @@ public class MainActivity extends Activity {
 
         // Media
         settings.setMediaPlaybackRequiresUserGesture(false);
+
+        // Cache
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
         // Mixed content (allow https to load http resources if needed)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -71,7 +68,6 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                // Keep all navigation inside the WebView
                 view.loadUrl(url);
                 return true;
             }
@@ -79,13 +75,11 @@ public class MainActivity extends Activity {
 
         // --- WebChromeClient ---
         webView.setWebChromeClient(new WebChromeClient() {
-            // Grant camera/microphone permissions to the web page
             @Override
             public void onPermissionRequest(PermissionRequest request) {
                 request.grant(request.getResources());
             }
 
-            // Handle JavaScript alert() dialogs
             @Override
             public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
                 new AlertDialog.Builder(MainActivity.this)
@@ -97,7 +91,6 @@ public class MainActivity extends Activity {
                 return true;
             }
 
-            // Handle JavaScript confirm() dialogs
             @Override
             public boolean onJsConfirm(WebView view, String url, String message, JsResult result) {
                 new AlertDialog.Builder(MainActivity.this)
@@ -110,11 +103,10 @@ public class MainActivity extends Activity {
                 return true;
             }
 
-            // Log JavaScript console messages for debugging
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
                 android.util.Log.d("BPressureAI", consoleMessage.message()
-                    + " -- From line " + consoleMessage.lineNumber()
+                    + " -- line " + consoleMessage.lineNumber()
                     + " of " + consoleMessage.sourceId());
                 return true;
             }
@@ -123,7 +115,7 @@ public class MainActivity extends Activity {
         webView.loadUrl("https://beginth.github.io/bp-pressure-app/");
         setContentView(webView);
 
-        // Request camera permission for blood pressure photo
+        // Request camera permission
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_REQUEST);
