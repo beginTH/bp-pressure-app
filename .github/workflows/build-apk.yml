@@ -24,17 +24,19 @@ jobs:
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
         
+      - name: Configure Bubblewrap
+        run: |
+          mkdir -p ~/.bubblewrap
+          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json
+          
       - name: Build APK
         run: |
           # Create android.keystore (Temporary for build)
           keytool -genkey -v -keystore android.keystore -alias android -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=BPressure, OU=Health, O=BeginTH, L=Bangkok, S=Bangkok, C=TH"
           
-          # Initialize Bubblewrap project from the manifest
-          # We use --yes to skip interactive prompts
+          # Initialize and Build without interaction
           bubblewrap init --manifest twa-manifest.json --extracert --yes
-          
-          # Build the APK
-          bubblewrap build --signingKeyPath ./android.keystore --signingKeyPassword password --signingKeyAlias android
+          bubblewrap build --signingKeyPath ./android.keystore --signingKeyPassword password --signingKeyAlias android --skipCheck
           
       - name: Upload APK
         uses: actions/upload-artifact@v4
