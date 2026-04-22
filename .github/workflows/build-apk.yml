@@ -1,0 +1,43 @@
+name: Build Android APK
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          
+      - name: Install Bubblewrap
+        run: npm install -g @bubblewrap/cli
+        
+      - name: Build APK
+        run: |
+          # Create android.keystore (Temporary for build)
+          keytool -genkey -v -keystore android.keystore -alias android -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=BPressure, OU=Health, O=BeginTH, L=Bangkok, S=Bangkok, C=TH"
+          
+          # Initialize Bubblewrap project from the manifest
+          # We use --yes to skip interactive prompts
+          bubblewrap init --manifest twa-manifest.json --extracert --yes
+          
+          # Build the APK
+          bubblewrap build --signingKeyPath ./android.keystore --signingKeyPassword password --signingKeyAlias android
+          
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: bpressure-apk
+          path: ./*.apk

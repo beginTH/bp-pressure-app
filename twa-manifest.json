@@ -1,0 +1,29 @@
+{
+  "packageId": "com.beginth.bpressure",
+  "host": "beginth.github.io",
+  "name": "BPressure AI",
+  "launcherName": "BP AI",
+  "description": "Blood Pressure Tracker with AI insights",
+  "display": "standalone",
+  "startUrl": "/bp-pressure-app/index.html",
+  "iconUrl": "https://beginth.github.io/bp-pressure-app/icons/icon-512.png",
+  "maskableIconUrl": "https://beginth.github.io/bp-pressure-app/icons/icon-512.png",
+  "themeColor": "#0a0a0c",
+  "navigationColor": "#0a0a0c",
+  "navigationColorDark": "#0a0a0c",
+  "navigationDividerColor": "#0a0a0c",
+  "navigationDividerColorDark": "#0a0a0c",
+  "backgroundColor": "#0a0a0c",
+  "enableNotifications": false,
+  "shortcuts": [],
+  "webManifestUrl": "https://beginth.github.io/bp-pressure-app/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaCode": 1,
+  "orientation": "portrait",
+  "fingerprints": [],
+  "appKey": {
+    "file": "./android.keystore",
+    "alias": "android"
+  }
+}

@@ -1,79 +1,56 @@
 {
-  "id": "https://beginth.github.io/bp-pressure-app/",
+  "id": "bp-pressure-app-v1",
   "name": "BPressure AI - Blood Pressure Tracker",
   "short_name": "BPressure AI",
-  "description": "Smart and professional blood pressure tracking app with AI-ready storage and visualization.",
-  "lang": "th",
-  "dir": "ltr",
-  "start_url": "/bp-pressure-app/index.html",
-  "scope": "/bp-pressure-app/",
+  "description": "บันทึกและติดตามค่าความดันโลหิตของคุณอย่างมืออาชีพ พร้อมระบบ AI ช่วยวิเคราะห์แนวโน้มสุขภาพและกราฟแสดงผลที่สวยงาม",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "display_override": [
-    "standalone",
-    "window-controls-overlay"
-  ],
   "background_color": "#0a0a0c",
   "theme_color": "#0a0a0c",
   "orientation": "portrait",
-  "categories": [
-    "health",
-    "medical",
-    "fitness"
-  ],
+  "categories": ["health", "lifestyle", "medical"],
   "icons": [
     {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "screenshots": [
     {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
+      "src": "screenshots/screen1.png",
+      "sizes": "1080x1920",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "BPressure AI Dashboard"
+      "label": "Dashboard - หน้าหลักแสดงค่าล่าสุด"
     },
     {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
+      "src": "screenshots/screen2.png",
+      "sizes": "1080x1920",
       "type": "image/png",
-      "form_factor": "wide",
-      "label": "BPressure AI Desktop View"
+      "form_factor": "narrow",
+      "label": "History - ประวัติการบันทึก"
     }
-  ],
-  "shortcuts": [
-    {
-      "name": "บันทึกใหม่",
-      "url": "/bp-pressure-app/index.html#add",
-      "icons": [
-        {
-          "src": "icons/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "ดูประวัติ",
-      "url": "/bp-pressure-app/index.html#history",
-      "icons": [
-        {
-          "src": "icons/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
-    }
-  ],
-  "prefer_related_applications": false,
-  "launch_handler": {
-    "client_mode": "focus-existing"
-  }
+  ]
 }
+
