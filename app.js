@@ -12,10 +12,12 @@ const app = {
     capturedBlob: null,
     chart: null,
     deferredPrompt: null,
+    apiKey: null,
 
     init: async function() {
         console.log('App Initializing...');
         await this.initDB();
+        this.loadApiKey();
         this.setupEventListeners();
         this.route();
         this.refreshData();
@@ -122,6 +124,10 @@ const app = {
         if (viewId === 'dashboard') {
             this.refreshData();
         }
+
+        if (viewId === 'settings') {
+            this.updateApiKeyStatus();
+        }
     },
 
     // --- Camera Logic ---
@@ -129,7 +135,17 @@ const app = {
         const video = document.getElementById('camera-preview');
         const container = document.getElementById('camera-container');
         const controls = document.getElementById('camera-controls');
+        const fallback = document.getElementById('camera-fallback');
         
+        // Check if camera API is available (requires HTTPS or localhost)
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            console.warn("Camera API not available (requires HTTPS)");
+            video.style.display = 'none';
+            controls.style.display = 'none';
+            fallback.style.display = 'flex';
+            return;
+        }
+
         try {
             this.videoStream = await navigator.mediaDevices.getUserMedia({ 
                 video: { facingMode: 'environment' }, 
@@ -139,9 +155,13 @@ const app = {
             video.style.display = 'block';
             document.getElementById('photo-preview-container').style.display = 'none';
             controls.style.display = 'flex';
+            fallback.style.display = 'none';
         } catch (err) {
             console.error("Camera access denied:", err);
-            alert("กรุณาอนุญาตการเข้าถึงกล้องเพื่อถ่ายรูป");
+            // Show fallback UI instead of alert
+            video.style.display = 'none';
+            controls.style.display = 'none';
+            fallback.style.display = 'flex';
         }
     },
 
@@ -188,91 +208,188 @@ const app = {
         }, 'image/jpeg', 0.8);
     },
 
+    // --- API Key Management ---
+    loadApiKey: function() {
+        this.apiKey = localStorage.getItem('bp_gemini_api_key') || null;
+        this.updateApiKeyStatus();
+    },
+
+    saveApiKey: function(key) {
+        if (key && key.trim()) {
+            localStorage.setItem('bp_gemini_api_key', key.trim());
+            this.apiKey = key.trim();
+        } else {
+            localStorage.removeItem('bp_gemini_api_key');
+            this.apiKey = null;
+        }
+        this.updateApiKeyStatus();
+    },
+
+    updateApiKeyStatus: function() {
+        const statusEl = document.getElementById('api-key-status');
+        const inputEl = document.getElementById('input-api-key');
+        if (!statusEl) return;
+
+        if (this.apiKey) {
+            const masked = this.apiKey.substring(0, 8) + '••••••••' + this.apiKey.slice(-4);
+            statusEl.innerHTML = `<span class="status-connected">✅ เชื่อมต่อแล้ว</span> <span class="status-key">${masked}</span>`;
+            statusEl.className = 'api-key-status connected';
+            if (inputEl) inputEl.value = this.apiKey;
+        } else {
+            statusEl.innerHTML = '<span class="status-disconnected">⚠️ ยังไม่ได้ตั้งค่า API Key</span>';
+            statusEl.className = 'api-key-status disconnected';
+        }
+    },
+
+    // --- Gemini Vision AI Detection ---
+    blobToBase64: function(blob) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                resolve(reader.result.split(',')[1]);
+            };
+            reader.readAsDataURL(blob);
+        });
+    },
+
     detectBPValues: async function(blob) {
         const overlay = document.getElementById('ocr-overlay');
         const statusEl = document.getElementById('ocr-status');
-        
-        // Show loading overlay
+
+        // Check API key
+        if (!this.apiKey) {
+            overlay.style.display = 'flex';
+            statusEl.innerHTML = '⚠️ กรุณาตั้งค่า API Key ใน <a href="#settings" style="color:var(--accent-blue); text-decoration:underline;">ตั้งค่า</a> ก่อน';
+            setTimeout(() => { overlay.style.display = 'none'; }, 3000);
+            return;
+        }
+
         overlay.style.display = 'flex';
-        statusEl.textContent = '🔍 กำลังอ่านค่าจากรูป...';
+        statusEl.textContent = '🧠 AI กำลังวิเคราะห์รูป...';
 
         try {
-            // Preprocess image for better OCR
-            const imageUrl = URL.createObjectURL(blob);
-            
-            statusEl.textContent = '🧠 กำลังวิเคราะห์ตัวเลข...';
-            
-            const result = await Tesseract.recognize(imageUrl, 'eng', {
-                logger: m => {
-                    if (m.status === 'recognizing text') {
-                        const pct = Math.round(m.progress * 100);
-                        statusEl.textContent = `🧠 กำลังวิเคราะห์... ${pct}%`;
-                    }
+            const base64 = await this.blobToBase64(blob);
+
+            statusEl.textContent = '🔍 กำลังอ่านค่าความดัน...';
+
+            const response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.apiKey}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                {
+                                    inlineData: {
+                                        mimeType: 'image/jpeg',
+                                        data: base64
+                                    }
+                                },
+                                {
+                    text: `You are analyzing a photo of a digital blood pressure monitor with a 7-segment LCD display.
+
+The display typically shows 3 numbers stacked vertically:
+- Top number (labeled SYS or mmHg): Systolic blood pressure (usually 80-200)
+- Middle number (labeled DIA or mmHg): Diastolic blood pressure (usually 40-130)
+- Bottom number (labeled P/min or with a heart icon): Pulse/heart rate (usually 40-180)
+
+Read the 7-segment digits carefully. Common confusions: 1 vs 7, 6 vs 8, 5 vs 6.
+
+Return ONLY a JSON object, no markdown, no backticks, no explanation:
+{"sys": <number>, "dia": <number>, "pulse": <number>}
+If a value cannot be read, use null.`
+                                }
+                            ]
+                        }],
+                        generationConfig: {
+                            temperature: 0.1,
+                            maxOutputTokens: 1024
+                        }
+                    })
                 }
-            });
+            );
 
-            URL.revokeObjectURL(imageUrl);
-
-            // Extract numbers from OCR text
-            const text = result.data.text;
-            console.log('OCR Raw Text:', text);
-            
-            // Find all 2-3 digit numbers
-            const numbers = text.match(/\b\d{2,3}\b/g);
-            console.log('Detected numbers:', numbers);
-
-            if (numbers && numbers.length >= 3) {
-                // Convert to integers and sort descending
-                const nums = numbers.map(Number)
-                    .filter(n => n >= 30 && n <= 250) // Filter reasonable BP values
-                    .sort((a, b) => b - a);
-
-                if (nums.length >= 3) {
-                    // Largest = SYS, second = DIA or Pulse, third = remaining
-                    const sys = nums[0];
-                    // DIA is typically less than SYS and between 40-120
-                    // Pulse is typically between 40-200
-                    let dia, pulse;
-                    
-                    if (nums[1] <= 120) {
-                        dia = nums[1];
-                        pulse = nums[2];
-                    } else {
-                        // If second number > 120, it might be pulse
-                        pulse = nums[1];
-                        dia = nums[2];
-                    }
-
-                    document.getElementById('in-sys').value = sys;
-                    document.getElementById('in-dia').value = dia;
-                    document.getElementById('in-pulse').value = pulse;
-
-                    statusEl.innerHTML = `✅ ตรวจพบ: SYS ${sys} / DIA ${dia} / Pulse ${pulse}`;
-                    setTimeout(() => { overlay.style.display = 'none'; }, 2000);
-                    return;
-                } else if (nums.length >= 2) {
-                    document.getElementById('in-sys').value = nums[0];
-                    document.getElementById('in-dia').value = nums[1];
-                    statusEl.innerHTML = `⚠️ พบ 2 ค่า: SYS ${nums[0]} / DIA ${nums[1]} — กรุณากรอก Pulse เอง`;
-                    setTimeout(() => { overlay.style.display = 'none'; }, 2500);
-                    return;
-                }
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error?.message || `API Error (${response.status})`);
             }
 
-            // Fallback: couldn't detect enough values
-            statusEl.innerHTML = '⚠️ ไม่สามารถอ่านค่าได้ชัดเจน — กรุณากรอกค่าเอง';
-            setTimeout(() => { overlay.style.display = 'none'; }, 2500);
+            const data = await response.json();
+            // gemini-2.5-flash is a thinking model - text may be in a later part
+            const parts = data.candidates?.[0]?.content?.parts || [];
+            const textPart = parts.find(p => p.text) || {};
+            const text = textPart.text || '';
+            console.log('Gemini Response:', text);
+
+            // Parse JSON from response
+            const jsonMatch = text.match(/\{[^}]+\}/);
+            if (jsonMatch) {
+                const values = JSON.parse(jsonMatch[0]);
+
+                if (values.sys) document.getElementById('in-sys').value = values.sys;
+                if (values.dia) document.getElementById('in-dia').value = values.dia;
+                if (values.pulse) document.getElementById('in-pulse').value = values.pulse;
+
+                const foundCount = [values.sys, values.dia, values.pulse].filter(v => v != null).length;
+
+                if (foundCount === 3) {
+                    statusEl.innerHTML = `✅ AI ตรวจพบ: SYS <strong>${values.sys}</strong> / DIA <strong>${values.dia}</strong> / Pulse <strong>${values.pulse}</strong>`;
+                } else if (foundCount > 0) {
+                    statusEl.innerHTML = `⚠️ AI อ่านได้ ${foundCount} ค่า — กรุณาตรวจสอบและเติมค่าที่เหลือ`;
+                } else {
+                    statusEl.innerHTML = '⚠️ AI ไม่สามารถอ่านค่าได้ — กรุณากรอกค่าเอง';
+                }
+                setTimeout(() => { overlay.style.display = 'none'; }, 2500);
+            } else {
+                throw new Error('ไม่สามารถแปลผลจาก AI ได้');
+            }
 
         } catch (err) {
-            console.error('OCR Error:', err);
-            statusEl.innerHTML = '❌ เกิดข้อผิดพลาด — กรุณากรอกค่าเอง';
-            setTimeout(() => { overlay.style.display = 'none'; }, 2000);
+            console.error('Gemini Vision Error:', err);
+            let msg = err.message;
+            if (msg.includes('API key') || msg.includes('API_KEY_INVALID')) {
+                msg = 'API Key ไม่ถูกต้อง — กรุณาตรวจสอบในตั้งค่า';
+            } else if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
+                msg = 'ใช้งานเกินโควต้า — กรุณารอสักครู่แล้วลองใหม่';
+            } else if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+                msg = 'ไม่มีอินเทอร์เน็ต — กรุณาเชื่อมต่อแล้วลองใหม่';
+            }
+            statusEl.innerHTML = `❌ ${msg}`;
+            setTimeout(() => { overlay.style.display = 'none'; }, 3000);
         }
     },
 
     retakePhoto: function() {
         this.capturedBlob = null;
+        document.getElementById('photo-preview-container').style.display = 'none';
         this.startCamera();
+    },
+
+    pickFromGallery: function() {
+        document.getElementById('file-picker').click();
+    },
+
+    handleFilePicked: function(file) {
+        if (!file) return;
+
+        const preview = document.getElementById('photo-preview');
+        const previewContainer = document.getElementById('photo-preview-container');
+        const video = document.getElementById('camera-preview');
+        const controls = document.getElementById('camera-controls');
+        const fallback = document.getElementById('camera-fallback');
+
+        this.stopCamera();
+        this.capturedBlob = file;
+
+        preview.src = URL.createObjectURL(file);
+        previewContainer.style.display = 'block';
+        video.style.display = 'none';
+        controls.style.display = 'none';
+        fallback.style.display = 'none';
+
+        // Auto-detect BP values via AI
+        this.detectBPValues(file);
     },
 
     // --- UI Rendering ---
@@ -493,6 +610,55 @@ const app = {
         const btnSnap = document.getElementById('btn-snap');
         if (btnSnap) {
             btnSnap.addEventListener('click', () => this.takePhoto());
+        }
+
+        // Gallery buttons
+        const btnGallery = document.getElementById('btn-gallery');
+        if (btnGallery) {
+            btnGallery.addEventListener('click', () => this.pickFromGallery());
+        }
+        const btnGalleryFallback = document.getElementById('btn-gallery-fallback');
+        if (btnGalleryFallback) {
+            btnGalleryFallback.addEventListener('click', () => this.pickFromGallery());
+        }
+
+        // File picker change
+        const filePicker = document.getElementById('file-picker');
+        if (filePicker) {
+            filePicker.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) this.handleFilePicked(file);
+                e.target.value = ''; // Reset so same file can be picked again
+            });
+        }
+
+        // Settings: Save API Key
+        const btnSaveKey = document.getElementById('btn-save-key');
+        if (btnSaveKey) {
+            btnSaveKey.addEventListener('click', () => {
+                const key = document.getElementById('input-api-key').value;
+                this.saveApiKey(key);
+                if (key && key.trim()) {
+                    alert('✅ บันทึก API Key เรียบร้อยแล้ว!');
+                } else {
+                    alert('ลบ API Key เรียบร้อยแล้ว');
+                }
+            });
+        }
+
+        // Settings: Toggle key visibility
+        const btnToggleKey = document.getElementById('btn-toggle-key');
+        if (btnToggleKey) {
+            btnToggleKey.addEventListener('click', () => {
+                const input = document.getElementById('input-api-key');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    btnToggleKey.textContent = '🔒';
+                } else {
+                    input.type = 'password';
+                    btnToggleKey.textContent = '👁️';
+                }
+            });
         }
     },
 

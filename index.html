@@ -107,6 +107,8 @@
                 <h1>บันทึกใหม่</h1>
             </header>
             
+            <input type="file" id="file-picker" accept="image/*" capture="environment" style="display:none;">
+
             <div id="camera-container" class="camera-card glass">
                 <video id="camera-preview" autoplay playsinline></video>
                 <div id="camera-viewfinder" class="viewfinder">
@@ -121,8 +123,15 @@
                     <img id="photo-preview" src="">
                     <button class="btn-retake" onclick="app.retakePhoto()">ถ่ายใหม่</button>
                 </div>
+                <!-- Camera fallback: shown when camera is not available -->
+                <div id="camera-fallback" class="camera-fallback" style="display:none;">
+                    <span class="fallback-icon">📷</span>
+                    <p>ไม่สามารถเปิดกล้องได้</p>
+                    <button id="btn-gallery-fallback" class="btn-gallery">🖼️ เลือกรูปจากคลัง</button>
+                </div>
                 <div id="camera-controls">
                     <button id="btn-snap" class="btn-snap"></button>
+                    <button id="btn-gallery" class="btn-gallery-float" title="เลือกรูปจากคลัง">🖼️</button>
                 </div>
                 <div id="ocr-overlay" class="ocr-overlay" style="display:none;">
                     <div class="ocr-spinner"></div>
@@ -149,6 +158,49 @@
             </form>
         </section>
 
+        <!-- View: Settings -->
+        <section id="view-settings" class="view">
+            <header>
+                <h1>ตั้งค่า</h1>
+                <p>จัดการ AI สำหรับอ่านค่าอัตโนมัติ</p>
+            </header>
+
+            <div class="settings-container">
+                <div class="settings-card glass">
+                    <div class="settings-header">
+                        <span class="settings-icon">🤖</span>
+                        <div>
+                            <h3>Google Gemini AI</h3>
+                            <p class="settings-subtitle">วิเคราะห์รูปเครื่องวัดความดันอัตโนมัติ</p>
+                        </div>
+                    </div>
+
+                    <div class="api-key-group">
+                        <label for="input-api-key">API Key</label>
+                        <div class="api-key-input-wrap">
+                            <input type="password" id="input-api-key" placeholder="ใส่ Gemini API Key ของคุณ">
+                            <button type="button" id="btn-toggle-key" class="btn-toggle-key">👁️</button>
+                        </div>
+                    </div>
+
+                    <div id="api-key-status" class="api-key-status"></div>
+
+                    <button id="btn-save-key" class="btn-submit">💾 บันทึก API Key</button>
+
+                    <div class="api-key-help glass">
+                        <p class="help-title">📌 วิธีรับ API Key ฟรี</p>
+                        <ol>
+                            <li>ไปที่ <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a></li>
+                            <li>ล็อกอินด้วย Google Account</li>
+                            <li>กด <strong>"Create API Key"</strong></li>
+                            <li>คัดลอก Key มาใส่ด้านบน</li>
+                        </ol>
+                        <p class="free-note">✅ ฟรี! ใช้ได้ 15 ครั้ง/นาที เพียงพอสำหรับใช้งานส่วนตัว</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Bottom Navigation -->
         <nav class="bottom-nav">
             <a href="#dashboard" class="nav-item active" data-view="dashboard">
@@ -162,12 +214,16 @@
             <a href="#add" class="nav-item central" data-view="add">
                 <span class="icon">+</span>
             </a>
+            <a href="#settings" class="nav-item" data-view="settings">
+                <span class="icon">⚙️</span>
+                <label>ตั้งค่า</label>
+            </a>
         </nav>
     </div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
     <script src="app.js"></script>
 </body>
 </html>

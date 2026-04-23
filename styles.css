@@ -472,6 +472,69 @@ header p {
     color: white;
 }
 
+/* Camera Fallback */
+.camera-fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 40px 20px;
+    width: 100%;
+}
+
+.fallback-icon {
+    font-size: 48px;
+    opacity: 0.4;
+}
+
+.camera-fallback p {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.btn-gallery {
+    padding: 14px 28px;
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+    color: white;
+    font-weight: 600;
+    font-size: 15px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-gallery:active {
+    transform: scale(0.95);
+}
+
+/* Gallery float button next to snap */
+.btn-gallery-float {
+    position: absolute;
+    right: 30px;
+    bottom: 30px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: transform 0.2s;
+}
+
+.btn-gallery-float:active {
+    transform: scale(0.9);
+}
+
 .record-form {
     padding: 0 24px;
 }
@@ -637,4 +700,208 @@ header p {
     background: rgba(251, 191, 36, 0.15);
     color: var(--accent-warning);
     border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+/* ===== Settings Page ===== */
+.settings-container {
+    padding: 0 24px 24px;
+}
+
+.settings-card {
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.settings-card::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.12), transparent);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.settings-icon {
+    font-size: 36px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.settings-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.settings-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* API Key Input */
+.api-key-group {
+    margin-bottom: 16px;
+}
+
+.api-key-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.api-key-input-wrap {
+    display: flex;
+    gap: 8px;
+}
+
+.api-key-input-wrap input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: white;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.api-key-input-wrap input:focus {
+    outline: none;
+    border-color: rgba(99, 102, 241, 0.5);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.api-key-input-wrap input::placeholder {
+    color: rgba(255, 255, 255, 0.2);
+    font-family: 'Outfit', sans-serif;
+}
+
+.btn-toggle-key {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    width: 48px;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.3s;
+    flex-shrink: 0;
+}
+
+.btn-toggle-key:active {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* API Key Status */
+.api-key-status {
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    transition: all 0.3s;
+}
+
+.api-key-status.connected {
+    background: rgba(0, 255, 163, 0.08);
+    border: 1px solid rgba(0, 255, 163, 0.2);
+}
+
+.api-key-status.disconnected {
+    background: rgba(251, 191, 36, 0.08);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.status-connected {
+    color: var(--accent-green);
+    font-weight: 600;
+}
+
+.status-disconnected {
+    color: var(--accent-warning);
+    font-weight: 600;
+}
+
+.status-key {
+    display: block;
+    margin-top: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+    word-break: break-all;
+}
+
+/* Settings Save Button */
+.settings-card .btn-submit {
+    margin-bottom: 24px;
+}
+
+/* API Key Help */
+.api-key-help {
+    padding: 20px;
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    position: relative;
+}
+
+.help-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 14px;
+}
+
+.api-key-help ol {
+    padding-left: 20px;
+    margin-bottom: 16px;
+}
+
+.api-key-help li {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.api-key-help a {
+    color: var(--accent-blue);
+    text-decoration: none;
+    font-weight: 600;
+    transition: opacity 0.3s;
+}
+
+.api-key-help a:active {
+    opacity: 0.7;
+}
+
+.free-note {
+    font-size: 12px;
+    color: var(--accent-green);
+    font-weight: 600;
+    padding: 10px 14px;
+    background: rgba(0, 255, 163, 0.06);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 255, 163, 0.12);
 }
