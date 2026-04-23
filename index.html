@@ -107,8 +107,9 @@
                 <h1>บันทึกใหม่</h1>
             </header>
             
+            <!-- Hidden file input for gallery -->
             <input type="file" id="file-picker" accept="image/*" style="display:none;">
-
+            
             <div id="camera-container" class="camera-card glass">
                 <video id="camera-preview" autoplay playsinline></video>
                 <div id="camera-viewfinder" class="viewfinder">
@@ -131,7 +132,10 @@
                 </div>
                 <div id="camera-controls">
                     <button id="btn-snap" class="btn-snap"></button>
-                    <button id="btn-gallery" class="btn-gallery-float" title="เลือกรูปจากคลัง">🖼️</button>
+                    <!-- Gallery picker linked directly via label for reliability -->
+                <label for="file-picker" id="btn-gallery" class="btn-gallery-float">
+                    🖼️
+                </label>
                 </div>
                 <div id="ocr-overlay" class="ocr-overlay" style="display:none;">
                     <div class="ocr-spinner"></div>
@@ -196,6 +200,11 @@
                             <li>คัดลอก Key มาใส่ด้านบน</li>
                         </ol>
                         <p class="free-note">✅ ฟรี! ใช้ได้ 15 ครั้ง/นาที เพียงพอสำหรับใช้งานส่วนตัว</p>
+                    </div>
+
+                    <!-- Version Info -->
+                    <div class="version-info">
+                        Version 1.0.6 (Beta)
                     </div>
                 </div>
             </div>

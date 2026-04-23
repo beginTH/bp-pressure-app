@@ -914,3 +914,13 @@ header p {
     border-radius: 10px;
     border: 1px solid rgba(0, 255, 163, 0.12);
 }
+
+.version-info {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-secondary);
+    opacity: 0.5;
+    margin-top: 32px;
+    padding-bottom: 20px;
+    font-family: 'Monaco', 'Consolas', monospace;
+}
