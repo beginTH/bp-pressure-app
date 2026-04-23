@@ -1,3 +1,4 @@
+:root {
     --bg-dark: #07070a;
     --card-bg: rgba(26, 26, 31, 0.7);
     --accent-red: #ff3b3b;
@@ -558,15 +559,23 @@ header p {
 
 .input-group input {
     width: 100%;
-    background: rgba(255,255,255,0.05);
+    background: rgba(0, 0, 0, 0.4);
     border: 1px solid var(--glass-border);
     border-radius: 12px;
-    padding: 12px;
-    color: white;
+    padding: 14px;
+    color: #ffffff !important;
     font-family: inherit;
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 22px;
+    font-weight: 700;
     text-align: center;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.input-group input:focus {
+    background: rgba(0, 0, 0, 0.6);
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 15px rgba(0, 136, 255, 0.2);
 }
 
 .btn-submit {
@@ -779,14 +788,14 @@ header p {
 
 .api-key-input-wrap input {
     flex: 1;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.4);
     border: 1px solid var(--glass-border);
     border-radius: 12px;
     padding: 14px 16px;
-    color: white;
+    color: #ffffff !important;
     font-family: 'Courier New', monospace;
     font-size: 14px;
-    transition: border-color 0.3s, box-shadow 0.3s;
+    transition: all 0.3s;
 }
 
 .api-key-input-wrap input:focus {
